@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>استعلام عن المشرف التدريبي</title>
+  <style>
+    body { font-family: 'Cairo', sans-serif; background:#f4f6f8; text-align:center; padding-top:60px; }
+    h2 { color:#1c88e5; }
+    input { padding:10px; width:260px; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+    button { padding:10px 20px; margin-top:10px; background-color:#1c88e5; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
+    button:hover { background-color:#166fbb; }
+    #result { margin-top:20px; font-size:18px; color:#333; }
+    .card { display:inline-block; padding:15px; border-radius:10px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:right; }
+  </style>
+</head>
+<body>
+
+  <h2>استعلام عن المشرف التدريبي</h2>
+
+  <input type="text" id="studentId" placeholder="أدخل رقمك الجامعي">
+  <br>
+  <button type="button" onclick="check()">بحث</button>
+
+  <div id="result"></div>
+
+  <script>
+    // رابط الـGoogle Script Web App
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEoEcHtELajwrr5dPXQROmonKyLljBwUkPOVtu9HF-6abN0RZEouRMtMsTp4eKwsGLmg/exec";
+
+    async function check() {
+      const id = document.getElementById('studentId').value.trim();
+      const resultDiv = document.getElementById('result');
+
+      if (!id) {
+        resultDiv.textContent = "يرجى إدخال الرقم الجامعي.";
+        return;
+      }
+
+      resultDiv.textContent = "جاري البحث ...";
+
+      try {
+        const response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(id)}`);
+        const data = await response.json();
+
+        if (data.found) {
+          resultDiv.innerHTML = `
+            <div class="card">
+              <b>الرقم الجامعي:</b> ${data.Id} <br>
+              <b>اسم الطالب:</b> ${data.اسم_الطالب} <br>
+              <b>التخصص:</b> ${data.التخصص} <br>
+              <b>المشرف:</b> ${data.اسم_المشرف}
+            </div>
+          `;
+        } else {
+          resultDiv.textContent = data.message || "لم يتم العثور على بيانات.";
+        }
+
+      } catch (err) {
+        console.error(err);
+        resultDiv.textContent = "حدث خطأ أثناء الاتصال بالخدمة.";
+      }
+    }
+  </script>
+
+</body>
+</html>
