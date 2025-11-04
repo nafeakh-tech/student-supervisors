@@ -2,110 +2,66 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>استعلام بيانات التدريب - الجامعة الأردنية</title>
+  <title>استعلام عن مشرف التدريب</title>
   <style>
-    body {
-      font-family: 'Cairo', sans-serif;
-      background: #f1f5f9;
-      text-align: center;
-      direction: rtl;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      background: white;
-      max-width: 400px;
-      margin: 80px auto;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #00543D;
-      margin-bottom: 20px;
-    }
-    input[type="text"] {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      text-align: center;
-    }
-    button {
-      background-color: #00543D;
-      color: white;
-      padding: 10px 25px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover {
-      background-color: #007a56;
-    }
-    .result {
-      margin-top: 25px;
-      background: #e8f5e9;
-      border-radius: 8px;
-      padding: 15px;
-      display: none;
-      text-align: right;
-    }
-    .error {
-      color: red;
-      margin-top: 15px;
-    }
+    body { font-family: 'Cairo', sans-serif; background:#f4f6f8; text-align:center; padding-top:60px; }
+    h2 { color:#1c88e5; }
+    input { padding:10px; width:260px; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+    button { padding:10px 20px; margin-top:10px; background-color:#1c88e5; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:16px; }
+    button:hover { background-color:#166fbb; }
+    #result { margin-top:20px; font-size:18px; color:#333; }
+    .card { display:inline-block; padding:15px; border-radius:10px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:right; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>استعلام بيانات التدريب</h2>
-    <p>الرجاء إدخال الرقم الجامعي:</p>
-    <input type="text" id="studentId" placeholder="أدخل الرقم الجامعي">
-    <button onclick="searchStudent()">بحث</button>
-    <div class="error" id="error"></div>
-    <div class="result" id="result"></div>
-  </div>
+
+  <h2>استعلام عن مشرف التدريب</h2>
+
+  <input type="text" id="studentId" placeholder="أدخل رقمك الجامعي">
+  <br>
+  <button type="button" onclick="check()">بحث</button>
+
+  <div id="result"></div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // ضع رابط السكربت هنا
+    // رابط الـGoogle Script Web App
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzvppAvk8k6kP7-jo-hvzM7if0_uxbroeo3q8XfLbDOKJgu7Y5qD9MF8X98taUlbWv7/exec";
 
-    async function searchStudent() {
-      const id = document.getElementById("studentId").value.trim();
-      const errorDiv = document.getElementById("error");
-      const resultDiv = document.getElementById("result");
-      errorDiv.textContent = "";
-      resultDiv.style.display = "none";
+    async function check() {
+      const id = document.getElementById('studentId').value.trim();
+      const resultDiv = document.getElementById('result');
 
       if (!id) {
-        errorDiv.textContent = "الرجاء إدخال الرقم الجامعي.";
+        resultDiv.textContent = "يرجى إدخال الرقم الجامعي.";
         return;
       }
 
+      resultDiv.textContent = "جاري البحث ...";
+
       try {
-        const response = await fetch(`${SCRIPT_URL}?id=${id}`);
+        const response = await fetch(`${SCRIPT_URL}?id=${encodeURIComponent(id)}`);
         const data = await response.json();
 
         if (data.found) {
           resultDiv.innerHTML = `
-            <p><strong>الرقم الجامعي:</strong> ${data.Id}</p>
-            <p><strong>اسم الطالب:</strong> ${data["اسم_الطالب"]}</p>
-            <p><strong>التخصص:</strong> ${data["التخصص"]}</p>
-            <p><strong>اسم المشرف:</strong> ${data["اسم_المشرف"]}</p>
+            <div class="card">
+              <b>الرقم الجامعي:</b> ${data.Id} <br>
+              <b>اسم الطالب:</b> ${data.اسم_الطالب} <br>
+              <b>التخصص:</b> ${data.التخصص} <br>
+              <b>المشرف:</b> ${data.اسم_المشرف}
+            </div>
           `;
-          resultDiv.style.display = "block";
         } else {
-          errorDiv.textContent = data.message || "لم يتم العثور على الطالب.";
+          resultDiv.textContent = data.message || "لم يتم العثور على بيانات.";
         }
-      } catch (error) {
-        errorDiv.textContent = "حدث خطأ أثناء الاتصال. حاول لاحقًا.";
-        console.error(error);
+
+      } catch (err) {
+        console.error(err);
+        resultDiv.textContent = "حدث خطأ أثناء الاتصال بالخدمة.";
       }
     }
   </script>
+
 </body>
 </html>
+
